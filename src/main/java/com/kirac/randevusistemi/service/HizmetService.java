@@ -1,5 +1,7 @@
 package com.kirac.randevusistemi.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.kirac.randevusistemi.entity.Hizmet;
@@ -22,13 +24,13 @@ public class HizmetService {
 
         if (hizmet.getSure() == null || hizmet.getSure() <= 0) {
             throw new IllegalArgumentException(
-                "Hizmet süresi sıfırdan büyük olmalıdır."
+                    "Hizmet süresi sıfırdan büyük olmalıdır."
             );
         }
 
         if (hizmet.getUcret() == null || hizmet.getUcret() < 0) {
             throw new IllegalArgumentException(
-                "Hizmet ücreti negatif olamaz."
+                    "Hizmet ücreti negatif olamaz."
             );
         }
 
@@ -37,5 +39,15 @@ public class HizmetService {
         }
 
         return hizmetRepository.save(hizmet);
+    }
+
+    public List<Hizmet> tumHizmetleriGetir() {
+        return hizmetRepository.findAll();
+    }
+
+    public Hizmet idIleHizmetGetir(Integer id) {
+        return hizmetRepository.findById(id)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Hizmet bulunamadı."));
     }
 }
