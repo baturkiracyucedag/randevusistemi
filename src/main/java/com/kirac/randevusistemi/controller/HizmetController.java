@@ -1,14 +1,14 @@
 package com.kirac.randevusistemi.controller;
 
 import java.util.List;
-
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.DeleteMapping;
 import com.kirac.randevusistemi.entity.Hizmet;
 import com.kirac.randevusistemi.service.HizmetService;
 
@@ -35,5 +35,18 @@ public class HizmetController {
     @GetMapping("/{id}")
     public Hizmet idIleHizmetGetir(@PathVariable Integer id) {
         return hizmetService.idIleHizmetGetir(id);
+    }
+
+    @PutMapping("/{id}")
+    public Hizmet hizmetGuncelle(
+            @PathVariable Integer id,
+            @RequestBody Hizmet hizmet) {
+
+        return hizmetService.hizmetGuncelle(id, hizmet);
+    }
+
+    @DeleteMapping("/{id}")
+    public void hizmetSil(@PathVariable Integer id) {
+        hizmetService.hizmetSil(id);
     }
 }
