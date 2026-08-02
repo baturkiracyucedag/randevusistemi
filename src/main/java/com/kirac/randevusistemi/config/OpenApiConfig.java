@@ -15,7 +15,7 @@ public class OpenApiConfig {
 
         return new OpenAPI()
                 .info(new Info()
-                        .title("Berber Randevu Sistemi API")
+                        .title("Randevu Sistemi API")
                         .version("1.0")
                         .description("Spring Boot kullanılarak geliştirilen berber randevu sistemi REST API dokümantasyonudur.")
                         .contact(new Contact()

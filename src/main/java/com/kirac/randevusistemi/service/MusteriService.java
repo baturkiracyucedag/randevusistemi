@@ -32,8 +32,7 @@ public class MusteriService {
 
     public Musteri idIleMusteriGetir(Integer id) {
         return musteriRepository.findById(id)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Müşteri bulunamadı."));
+                .orElseThrow(() -> new IllegalArgumentException("Müşteri bulunamadı."));
     }
 
     public Musteri musteriGuncelle(Integer id, Musteri yeniMusteri) {

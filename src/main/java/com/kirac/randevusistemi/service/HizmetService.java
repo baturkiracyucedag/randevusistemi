@@ -75,12 +75,12 @@ public class HizmetService {
 
         return hizmetRepository.save(mevcutHizmet);
     }
+
     public void hizmetSil(Integer id) {
 
-    Hizmet hizmet = hizmetRepository.findById(id)
-            .orElseThrow(() ->
-                    new IllegalArgumentException("Hizmet bulunamadı."));
+        Hizmet hizmet = hizmetRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Hizmet bulunamadı."));
 
-    hizmetRepository.delete(hizmet);
-}
+        hizmetRepository.delete(hizmet);
+    }
 }
