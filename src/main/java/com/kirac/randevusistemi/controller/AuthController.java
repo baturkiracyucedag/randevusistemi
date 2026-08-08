@@ -1,5 +1,10 @@
 package com.kirac.randevusistemi.controller;
-
+import com.kirac.randevusistemi.dto.RegisterRequest;
+import com.kirac.randevusistemi.entity.Kullanici;
+import com.kirac.randevusistemi.entity.Musteri;
+import com.kirac.randevusistemi.entity.Rol;
+import com.kirac.randevusistemi.service.KullaniciService;
+import com.kirac.randevusistemi.service.MusteriService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,17 +27,23 @@ import io.swagger.v3.oas.annotations.tags.Tag;
         description = "Kullanıcı giriş işlemleri"
 )
 public class AuthController {
+        private final KullaniciService kullaniciService;
+private final MusteriService musteriService;
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
-    public AuthController(
-            AuthenticationManager authenticationManager,
-            JwtService jwtService) {
+  public AuthController(
+        AuthenticationManager authenticationManager,
+        JwtService jwtService,
+        KullaniciService kullaniciService,
+        MusteriService musteriService) {
 
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
-    }
+    this.authenticationManager = authenticationManager;
+    this.jwtService = jwtService;
+    this.kullaniciService = kullaniciService;
+    this.musteriService = musteriService;
+}
 
     @Operation(
             summary = "Kullanıcı girişi",
@@ -65,4 +76,37 @@ public class AuthController {
                 request.getKullaniciAdi(),
                 rol);
     }
+    @Operation(
+        summary = "Yeni kullanıcı kaydı oluşturur",
+        description = "Yeni müşteri ve ona bağlı normal kullanıcı hesabı oluşturur."
+)
+@PostMapping("/register")
+public Kullanici register(
+        @RequestBody RegisterRequest request) {
+
+    Musteri musteri = new Musteri();
+
+    musteri.setAd(request.getAd());
+    musteri.setSoyad(request.getSoyad());
+    musteri.setTelefon(request.getTelefon());
+    musteri.setEmail(request.getEmail());
+    musteri.setAktif(true);
+
+    Musteri kaydedilenMusteri =
+            musteriService.musteriEkle(musteri);
+
+    Kullanici kullanici = new Kullanici();
+
+    kullanici.setKullaniciAdi(
+            request.getKullaniciAdi());
+
+    kullanici.setEmail(request.getEmail());
+    kullanici.setSifre(request.getSifre());
+    kullanici.setRol(Rol.KULLANICI);
+    kullanici.setAktif(true);
+    kullanici.setMusteri(kaydedilenMusteri);
+
+    return kullaniciService.kullaniciEkle(kullanici);
+}
+    
 }

@@ -26,18 +26,24 @@ public class CustomUserDetailsService
             String kullaniciAdi)
             throws UsernameNotFoundException {
 
-        Kullanici kullanici = kullaniciRepository
-                .findByKullaniciAdi(kullaniciAdi)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(
-                                "Kullanıcı bulunamadı."));
+        Kullanici kullanici =
+                kullaniciRepository
+                        .findByKullaniciAdi(
+                                kullaniciAdi)
+                        .orElseThrow(() ->
+                                new UsernameNotFoundException(
+                                        "Kullanıcı bulunamadı."));
 
         return User.builder()
-                .username(kullanici.getKullaniciAdi())
-                .password(kullanici.getSifre())
-                .roles(kullanici.getRol().name())
-                .disabled(!Boolean.TRUE.equals(
-                        kullanici.getAktif()))
+                .username(
+                        kullanici.getKullaniciAdi())
+                .password(
+                        kullanici.getSifre())
+                .roles(
+                        kullanici.getRol().name())
+                .disabled(
+                        !Boolean.TRUE.equals(
+                                kullanici.getAktif()))
                 .build();
     }
 }

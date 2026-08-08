@@ -43,7 +43,8 @@ public class JwtService {
                 .claim("rol", rol)
                 .issuedAt(simdi)
                 .expiration(gecerlilikBitisi)
-                .signWith(imzalamaAnahtariniGetir())
+                .signWith(
+                        imzalamaAnahtariniGetir())
                 .compact();
     }
 
@@ -58,7 +59,9 @@ public class JwtService {
             String token) {
 
         return tumClaimleriGetir(token)
-                .get("rol", String.class);
+                .get(
+                        "rol",
+                        String.class);
     }
 
     public boolean tokenGecerliMi(

@@ -45,7 +45,10 @@ public class JwtAuthenticationFilter
         if (authorizationHeader == null
                 || !authorizationHeader.startsWith("Bearer ")) {
 
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(
+                    request,
+                    response);
+
             return;
         }
 
@@ -54,7 +57,9 @@ public class JwtAuthenticationFilter
 
         try {
             String kullaniciAdi =
-                    jwtService.kullaniciAdiniGetir(token);
+                    jwtService
+                            .kullaniciAdiniGetir(
+                                    token);
 
             if (kullaniciAdi != null
                     && SecurityContextHolder
@@ -91,6 +96,8 @@ public class JwtAuthenticationFilter
             SecurityContextHolder.clearContext();
         }
 
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(
+                request,
+                response);
     }
 }

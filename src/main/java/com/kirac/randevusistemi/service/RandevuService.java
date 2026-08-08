@@ -1,19 +1,20 @@
 package com.kirac.randevusistemi.service;
 
-import com.kirac.randevusistemi.dto.MusaitSaatDto;
-import java.util.ArrayList;
 import java.time.LocalDate;
-
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.kirac.randevusistemi.dto.MusaitSaatDto;
 import com.kirac.randevusistemi.entity.Hizmet;
+import com.kirac.randevusistemi.entity.Kullanici;
 import com.kirac.randevusistemi.entity.Musteri;
 import com.kirac.randevusistemi.entity.Personel;
 import com.kirac.randevusistemi.entity.Randevu;
 import com.kirac.randevusistemi.repository.HizmetRepository;
+import com.kirac.randevusistemi.repository.KullaniciRepository;
 import com.kirac.randevusistemi.repository.MusteriRepository;
 import com.kirac.randevusistemi.repository.PersonelRepository;
 import com.kirac.randevusistemi.repository.RandevuRepository;
@@ -25,17 +26,20 @@ public class RandevuService {
         private final PersonelRepository personelRepository;
         private final MusteriRepository musteriRepository;
         private final HizmetRepository hizmetRepository;
+        private final KullaniciRepository kullaniciRepository;
 
         public RandevuService(
                         RandevuRepository randevuRepository,
                         PersonelRepository personelRepository,
                         MusteriRepository musteriRepository,
-                        HizmetRepository hizmetRepository) {
+                        HizmetRepository hizmetRepository,
+                        KullaniciRepository kullaniciRepository) {
 
                 this.randevuRepository = randevuRepository;
                 this.personelRepository = personelRepository;
                 this.musteriRepository = musteriRepository;
                 this.hizmetRepository = hizmetRepository;
+                this.kullaniciRepository = kullaniciRepository;
         }
 
         public Randevu randevuEkle(Randevu randevu) {
@@ -69,6 +73,10 @@ public class RandevuService {
 
                         throw new IllegalArgumentException(
                                         "Hizmet seçilmelidir.");
+                }
+                if (randevu.getTarih().isBefore(LocalDate.now())) {
+                        throw new IllegalArgumentException(
+                                        "Geçmiş bir tarihe randevu oluşturulamaz.");
                 }
 
                 Personel personel = personelRepository
@@ -126,8 +134,49 @@ public class RandevuService {
                 return randevuRepository.save(randevu);
         }
 
+        public Randevu kullaniciRandevusuEkle(
+                        Randevu randevu,
+                        String kullaniciAdi) {
+
+                Kullanici kullanici = kullaniciRepository
+                                .findByKullaniciAdi(kullaniciAdi)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Kullanıcı bulunamadı."));
+
+                Musteri musteri = kullanici.getMusteri();
+
+                if (musteri == null) {
+                        throw new IllegalArgumentException(
+                                        "Kullanıcıya bağlı müşteri kaydı bulunamadı.");
+                }
+
+                randevu.setMusteri(musteri);
+
+                return randevuEkle(randevu);
+        }
+
         public List<Randevu> tumRandevulariGetir() {
                 return randevuRepository.findAll();
+        }
+
+        public List<Randevu> kullanicininRandevulariniGetir(
+                        String kullaniciAdi) {
+
+                Kullanici kullanici = kullaniciRepository
+                                .findByKullaniciAdi(kullaniciAdi)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Kullanıcı bulunamadı."));
+
+                Musteri musteri = kullanici.getMusteri();
+
+                if (musteri == null) {
+                        throw new IllegalArgumentException(
+                                        "Kullanıcıya bağlı müşteri kaydı bulunamadı.");
+                }
+
+                return randevuRepository
+                                .findByMusteriIdOrderByTarihAscSaatAsc(
+                                                musteri.getId());
         }
 
         public Randevu idIleRandevuGetir(Integer id) {
@@ -174,6 +223,10 @@ public class RandevuService {
 
                         throw new IllegalArgumentException(
                                         "Hizmet seçilmelidir.");
+                }
+                if (yeniRandevu.getTarih().isBefore(LocalDate.now())) {
+                        throw new IllegalArgumentException(
+                                        "Geçmiş bir tarihe randevu alınamaz.");
                 }
 
                 Personel personel = personelRepository
@@ -251,6 +304,51 @@ public class RandevuService {
                                                 "Randevu bulunamadı."));
 
                 randevuRepository.delete(randevu);
+        }
+
+        public Randevu kullaniciRandevusunuIptalEt(
+                        Integer randevuId,
+                        String kullaniciAdi) {
+
+                Kullanici kullanici = kullaniciRepository
+                                .findByKullaniciAdi(kullaniciAdi)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Kullanıcı bulunamadı."));
+
+                Musteri musteri = kullanici.getMusteri();
+
+                if (musteri == null) {
+                        throw new IllegalArgumentException(
+                                        "Kullanıcıya bağlı müşteri kaydı bulunamadı.");
+                }
+
+                Randevu randevu = randevuRepository
+                                .findById(randevuId)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Randevu bulunamadı."));
+
+                if (randevu.getMusteri() == null
+                                || !randevu.getMusteri()
+                                                .getId()
+                                                .equals(musteri.getId())) {
+
+                        throw new IllegalArgumentException(
+                                        "Bu randevuyu iptal etme yetkiniz bulunmamaktadır.");
+                }
+
+                if ("IPTAL_EDILDI".equals(randevu.getDurum())) {
+                        throw new IllegalArgumentException(
+                                        "Bu randevu zaten iptal edilmiş.");
+                }
+
+                if ("TAMAMLANDI".equals(randevu.getDurum())) {
+                        throw new IllegalArgumentException(
+                                        "Tamamlanmış bir randevu iptal edilemez.");
+                }
+
+                randevu.setDurum("IPTAL_EDILDI");
+
+                return randevuRepository.save(randevu);
         }
 
         public List<LocalTime> musaitSaatleriGetir(
@@ -376,6 +474,9 @@ public class RandevuService {
                                 yeniRandevu.getTarih());
 
                 for (Randevu mevcutRandevu : mevcutRandevular) {
+                        if ("IPTAL_EDILDI".equals(mevcutRandevu.getDurum())) {
+                                continue;
+                        }
 
                         if (haricTutulacakRandevuId != null
                                         && mevcutRandevu.getId()

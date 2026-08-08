@@ -1,6 +1,8 @@
 
 package com.kirac.randevusistemi.entity;
 
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -85,5 +87,17 @@ public class Kullanici {
 
     public void setAktif(Boolean aktif) {
         this.aktif = aktif;
+    }
+
+    @OneToOne
+    @JoinColumn(name = "musteri_id", unique = true)
+    private Musteri musteri;
+
+    public Musteri getMusteri() {
+        return musteri;
+    }
+
+    public void setMusteri(Musteri musteri) {
+        this.musteri = musteri;
     }
 }

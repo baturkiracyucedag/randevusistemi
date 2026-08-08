@@ -2,6 +2,7 @@ package com.kirac.randevusistemi.controller;
 
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,7 +31,6 @@ public class KullaniciController {
 
     public KullaniciController(
             KullaniciService kullaniciService) {
-
         this.kullaniciService = kullaniciService;
     }
 
@@ -41,7 +41,6 @@ public class KullaniciController {
     @PostMapping
     public Kullanici kullaniciEkle(
             @RequestBody Kullanici kullanici) {
-
         return kullaniciService.kullaniciEkle(kullanici);
     }
 
@@ -51,7 +50,6 @@ public class KullaniciController {
     )
     @GetMapping
     public List<Kullanici> tumKullanicilariGetir() {
-
         return kullaniciService.tumKullanicilariGetir();
     }
 
@@ -66,7 +64,6 @@ public class KullaniciController {
                     example = "1"
             )
             @PathVariable Integer id) {
-
         return kullaniciService.idIleKullaniciGetir(id);
     }
 
@@ -82,7 +79,6 @@ public class KullaniciController {
             )
             @PathVariable Integer id,
             @RequestBody Kullanici kullanici) {
-
         return kullaniciService.kullaniciGuncelle(
                 id,
                 kullanici);
@@ -90,7 +86,7 @@ public class KullaniciController {
 
     @Operation(
             summary = "Kullanıcıyı siler",
-            description = "Gönderilen kimliğe ait kullanıcı kaydını sistemden siler."
+            description = "Yönetici seçilen kullanıcıyı silebilir. Giriş yapan yönetici kendi hesabını silemez."
     )
     @DeleteMapping("/{id}")
     public void kullaniciSil(
@@ -98,8 +94,11 @@ public class KullaniciController {
                     description = "Silinecek kullanıcının kimliği",
                     example = "1"
             )
-            @PathVariable Integer id) {
+            @PathVariable Integer id,
+            Authentication authentication) {
 
-        kullaniciService.kullaniciSil(id);
+        kullaniciService.kullaniciSil(
+                id,
+                authentication.getName());
     }
 }

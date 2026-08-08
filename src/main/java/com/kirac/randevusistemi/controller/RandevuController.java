@@ -5,6 +5,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,13 +42,30 @@ public class RandevuController {
 
     @Operation(
             summary = "Yeni randevu oluşturur",
-            description = "Personel, müşteri, hizmet, tarih ve saat bilgileriyle sisteme yeni bir randevu ekler."
+            description = "Yönetici müşteri seçerek, normal kullanıcı ise JWT hesabına bağlı müşteri kaydı üzerinden yeni randevu oluşturur."
     )
     @PostMapping
     public Randevu randevuEkle(
-            @RequestBody Randevu randevu) {
+            @RequestBody Randevu randevu,
+            Authentication authentication) {
 
-        return randevuService.randevuEkle(randevu);
+        boolean yoneticiMi =
+                authentication
+                        .getAuthorities()
+                        .stream()
+                        .anyMatch(authority ->
+                                authority.getAuthority()
+                                        .equals("ROLE_YONETICI"));
+
+        if (yoneticiMi) {
+            return randevuService.randevuEkle(
+                    randevu);
+        }
+
+        return randevuService
+                .kullaniciRandevusuEkle(
+                        randevu,
+                        authentication.getName());
     }
 
     @Operation(
@@ -57,7 +75,21 @@ public class RandevuController {
     @GetMapping
     public List<Randevu> tumRandevulariGetir() {
 
-        return randevuService.tumRandevulariGetir();
+        return randevuService
+                .tumRandevulariGetir();
+    }
+
+    @Operation(
+            summary = "Giriş yapan kullanıcının randevularını getirir",
+            description = "JWT ile giriş yapan kullanıcıya bağlı müşterinin randevularını tarih ve saate göre listeler."
+    )
+    @GetMapping("/benim")
+    public List<Randevu> kullanicininRandevulariniGetir(
+            Authentication authentication) {
+
+        return randevuService
+                .kullanicininRandevulariniGetir(
+                        authentication.getName());
     }
 
     @Operation(
@@ -72,7 +104,8 @@ public class RandevuController {
             )
             @PathVariable Integer id) {
 
-        return randevuService.idIleRandevuGetir(id);
+        return randevuService
+                .idIleRandevuGetir(id);
     }
 
     @Operation(
@@ -88,9 +121,29 @@ public class RandevuController {
             @PathVariable Integer id,
             @RequestBody Randevu randevu) {
 
-        return randevuService.randevuGuncelle(
-                id,
-                randevu);
+        return randevuService
+                .randevuGuncelle(
+                        id,
+                        randevu);
+    }
+
+    @Operation(
+            summary = "Kullanıcının kendi randevusunu iptal eder",
+            description = "JWT ile giriş yapan kullanıcının yalnızca kendisine ait randevunun durumunu IPTAL_EDILDI olarak günceller."
+    )
+    @PutMapping("/benim/{id}/iptal")
+    public Randevu kullaniciRandevusunuIptalEt(
+            @Parameter(
+                    description = "İptal edilecek randevunun kimliği",
+                    example = "1"
+            )
+            @PathVariable Integer id,
+            Authentication authentication) {
+
+        return randevuService
+                .kullaniciRandevusunuIptalEt(
+                        id,
+                        authentication.getName());
     }
 
     @Operation(
@@ -122,7 +175,7 @@ public class RandevuController {
 
             @Parameter(
                     description = "Müsait saatlerin sorgulanacağı tarih",
-                    example = "2026-07-30"
+                    example = "2026-08-10"
             )
             @RequestParam
             @DateTimeFormat(
@@ -131,19 +184,20 @@ public class RandevuController {
 
             @Parameter(
                     description = "Süresi dikkate alınacak hizmetin kimliği",
-                    example = "2"
+                    example = "1"
             )
             @RequestParam Integer hizmetId) {
 
-        return randevuService.musaitSaatleriGetir(
-                personelId,
-                tarih,
-                hizmetId);
+        return randevuService
+                .musaitSaatleriGetir(
+                        personelId,
+                        tarih,
+                        hizmetId);
     }
 
     @Operation(
             summary = "Tüm saatlerin durumunu listeler",
-            description = "Personelin çalışma saatlerini, seçilen hizmet süresine göre müsait veya dolu bilgisiyle birlikte getirir."
+            description = "Personelin çalışma saatlerini seçilen hizmet süresine göre müsait veya dolu bilgisiyle birlikte getirir."
     )
     @GetMapping("/saat-durumlari")
     public List<MusaitSaatDto> tumSaatDurumlariniGetir(
@@ -155,7 +209,7 @@ public class RandevuController {
 
             @Parameter(
                     description = "Saat durumlarının sorgulanacağı tarih",
-                    example = "2026-07-30"
+                    example = "2026-08-10"
             )
             @RequestParam
             @DateTimeFormat(
@@ -164,7 +218,7 @@ public class RandevuController {
 
             @Parameter(
                     description = "Süresi dikkate alınacak hizmetin kimliği",
-                    example = "2"
+                    example = "1"
             )
             @RequestParam Integer hizmetId) {
 

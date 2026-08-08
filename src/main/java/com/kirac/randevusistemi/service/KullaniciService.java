@@ -24,38 +24,32 @@ public class KullaniciService {
     }
 
     public Kullanici kullaniciEkle(Kullanici kullanici) {
-
         if (kullanici.getKullaniciAdi() == null
                 || kullanici.getKullaniciAdi().isBlank()) {
-
             throw new IllegalArgumentException(
                     "Kullanıcı adı boş bırakılamaz.");
         }
 
         if (kullanici.getEmail() == null
                 || kullanici.getEmail().isBlank()) {
-
             throw new IllegalArgumentException(
                     "E-posta adresi boş bırakılamaz.");
         }
 
         if (kullanici.getSifre() == null
                 || kullanici.getSifre().isBlank()) {
-
             throw new IllegalArgumentException(
                     "Şifre boş bırakılamaz.");
         }
 
         if (kullaniciRepository.existsByKullaniciAdi(
                 kullanici.getKullaniciAdi())) {
-
             throw new IllegalArgumentException(
                     "Bu kullanıcı adı zaten kullanılmaktadır.");
         }
 
         if (kullaniciRepository.existsByEmail(
                 kullanici.getEmail())) {
-
             throw new IllegalArgumentException(
                     "Bu e-posta adresi zaten kullanılmaktadır.");
         }
@@ -80,7 +74,6 @@ public class KullaniciService {
     }
 
     public Kullanici idIleKullaniciGetir(Integer id) {
-
         return kullaniciRepository.findById(id)
                 .orElseThrow(() ->
                         new IllegalArgumentException(
@@ -99,21 +92,18 @@ public class KullaniciService {
 
         if (yeniKullanici.getKullaniciAdi() == null
                 || yeniKullanici.getKullaniciAdi().isBlank()) {
-
             throw new IllegalArgumentException(
                     "Kullanıcı adı boş bırakılamaz.");
         }
 
         if (yeniKullanici.getEmail() == null
                 || yeniKullanici.getEmail().isBlank()) {
-
             throw new IllegalArgumentException(
                     "E-posta adresi boş bırakılamaz.");
         }
 
         if (yeniKullanici.getSifre() == null
                 || yeniKullanici.getSifre().isBlank()) {
-
             throw new IllegalArgumentException(
                     "Şifre boş bırakılamaz.");
         }
@@ -140,10 +130,8 @@ public class KullaniciService {
 
         mevcutKullanici.setKullaniciAdi(
                 yeniKullanici.getKullaniciAdi());
-
         mevcutKullanici.setEmail(
                 yeniKullanici.getEmail());
-
         mevcutKullanici.setSifre(
                 passwordEncoder.encode(
                         yeniKullanici.getSifre()));
@@ -166,13 +154,21 @@ public class KullaniciService {
                 mevcutKullanici);
     }
 
-    public void kullaniciSil(Integer id) {
+    public void kullaniciSil(
+            Integer id,
+            String istekYapanKullaniciAdi) {
 
         Kullanici kullanici =
                 kullaniciRepository.findById(id)
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
                                         "Kullanıcı bulunamadı."));
+
+        if (kullanici.getKullaniciAdi()
+                .equals(istekYapanKullaniciAdi)) {
+            throw new IllegalArgumentException(
+                    "Kendi kullanıcı hesabınızı silemezsiniz.");
+        }
 
         kullaniciRepository.delete(kullanici);
     }
